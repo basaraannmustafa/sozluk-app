@@ -1,4 +1,6 @@
 import streamlit as st
+st.set_page_config(page_title="İngilizce-Türkçe Sözlük", layout="centered")
+
 import random
 import os
 
