@@ -37,7 +37,7 @@ def sozlugu_kaydet(sozluk):
             f.write(f"{kelime}:{anlam}\n")
 
 # Sayfa seçici
-sayfa = st.sidebar.selectbox("📂 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "📝 Quiz Modu"])
+sayfa = st.sidebar.selectbox("📂 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "📝 Quiz Modu", "📜 Sözlük Listesi"])
 
 # Sözlük verisi
 sozluk = sozlugu_yukle()
@@ -89,14 +89,14 @@ elif sayfa == "📝 Quiz Modu":
         if random.choice([True, False]):
             st.session_state.soru_tipi = "ing-tr"
             st.session_state.quiz_kelime, st.session_state.quiz_cevap = random.choice(list(sozluk.items()))
-            secenekler = random.sample(list(sozluk.values()), 3)
+            secenekler = random.sample(list(sozluk.values()), 4)
         else:
             st.session_state.soru_tipi = "tr-ing"
             st.session_state.quiz_kelime, st.session_state.quiz_cevap = random.choice(list(ters_sozluk.items()))
-            secenekler = random.sample(list(ters_sozluk.values()), 3)
+            secenekler = random.sample(list(ters_sozluk.values()), 4)
 
         if st.session_state.quiz_cevap not in secenekler:
-            secenekler[random.randint(0, 2)] = st.session_state.quiz_cevap
+            secenekler[random.randint(0, 3)] = st.session_state.quiz_cevap
 
         random.shuffle(secenekler)
         st.session_state.sec_options = secenekler
@@ -113,3 +113,13 @@ elif sayfa == "📝 Quiz Modu":
                 else:
                     st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
                 st.session_state.quiz_kelime = ""
+                
+ elif secenek == "📜 Sözlük Listesi":
+    st.header("📜 Tüm Sözlük Listesi")
+    sozluk = sozlugu_yukle()
+    
+    if sozluk:
+        df = pd.DataFrame(sozluk.items(), columns=["Kelime", "Anlam"])
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("Henüz sözlükte kayıtlı kelime yok.")               
