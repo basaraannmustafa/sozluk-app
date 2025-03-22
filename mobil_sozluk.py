@@ -110,13 +110,13 @@ elif sayfa == "📝 Quiz Modu":
             if st.button(secenek):
                 if secenek == st.session_state.quiz_cevap:
                     st.success("✅ Doğru!")
-                else:
-                    st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
-                st.session_state.quiz_kelime = ""
-                
- elif secenek == "📜 Sözlük Listesi":
-    st.header("📜 Tüm Sözlük Listesi")
-    sozluk = sozlugu_yukle()
+    else:
+        st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
+        st.session_state.quiz_kelime = ""
+
+    elif secenek == "📜 Sözlük Listesi":
+        st.header("📜 Tüm Sözlük Listesi")
+        sozluk = sozlugu_yukle()
     
     if sozluk:
         df = pd.DataFrame(sozluk.items(), columns=["Kelime", "Anlam"])
