@@ -1,9 +1,21 @@
-from kivy.lang import Builder 
-from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
+import streamlit as st
 import random
 import os
 
+# Özel font ve emoji desteği
+st.markdown("""
+    <style>
+    @font-face {
+        font-family: 'Inter';
+        src: url('fonts/Inter-Regular.ttf') format('truetype');
+    }
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Sözlük dosyasını yükleme
 def sozlugu_yukle():
     sozluk = {}
     if os.path.exists("sozluk.txt"):
@@ -16,80 +28,89 @@ def sozlugu_yukle():
                     continue
     return sozluk
 
-def sozlugu_kaydet():
+# Sözlüğü kaydetme
+def sozlugu_kaydet(sozluk):
     with open("sozluk.txt", "w", encoding="utf-8") as f:
         for kelime, anlam in sozluk.items():
             f.write(f"{kelime}:{anlam}\n")
 
+# Sayfa başlığı
+st.set_page_config(page_title="İngilizce-Türkçe Sözlük", layout="centered")
+
+# Sayfa seçici
+sayfa = st.sidebar.selectbox("📂 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "📝 Quiz Modu"])
+
+# Sözlük verisi
 sozluk = sozlugu_yukle()
 ters_sozluk = {v: k for k, v in sozluk.items()}
 
-class MainScreen(Screen):
-    pass
+# 🏠 Ana Sayfa
+if sayfa == "🏠 Ana Sayfa":
+    st.markdown("## 📚 İngilizce-Türkçe Sözlük")
+    st.markdown("Bu uygulama ile kelime arayabilir, yeni kelime ekleyebilir ve quiz modunda kendinizi test edebilirsiniz.")
 
-class DictionaryScreen(Screen):
-    def kelime_ara(self):
-        kelime = self.ids.entry.text.capitalize()
-        anlam = sozluk.get(kelime, ters_sozluk.get(kelime, "Bu kelime sözlükte bulunmamaktadır."))
-        self.ids.result_label.text = f"{kelime} -> {anlam}"
+# 📖 Sözlük Ekranı
+elif sayfa == "📖 Sözlük":
+    st.subheader("🔍 Kelime Ara")
+    kelime = st.text_input("Kelime giriniz:")
+    if st.button("Ara"):
+        anlam = sozluk.get(kelime.capitalize(), ters_sozluk.get(kelime.capitalize(), "Kelime bulunamadı."))
+        st.success(f"**{kelime.capitalize()} ➜ {anlam}**")
 
-    def kelime_ekle(self):
-        yeni_kelime = self.ids.new_word.text.capitalize()
-        yeni_anlam = self.ids.new_meaning.text.capitalize()
+    st.subheader("➕ Yeni Kelime Ekle")
+    yeni_kelime = st.text_input("Yeni Kelime:")
+    yeni_anlam = st.text_input("Anlamı:")
+    if st.button("Ekle"):
         if yeni_kelime and yeni_anlam:
-            sozluk[yeni_kelime] = yeni_anlam
-            sozlugu_kaydet()
-            self.ids.new_word.text = ""
-            self.ids.new_meaning.text = ""
-            self.ids.result_label.text = f"✅ '{yeni_kelime}' eklendi!"
+            sozluk[yeni_kelime.capitalize()] = yeni_anlam.capitalize()
+            sozlugu_kaydet(sozluk)
+            st.success(f"✅ '{yeni_kelime.capitalize()}' eklendi!")
 
-    def kelime_sil(self):
-        sil_kelime = self.ids.delete_word.text.capitalize()
-        if sil_kelime in sozluk:
-            del sozluk[sil_kelime]
-            sozlugu_kaydet()
-            self.ids.delete_word.text = ""
-            self.ids.result_label.text = f"❌ '{sil_kelime}' silindi!"
+    st.subheader("➖ Kelime Sil")
+    sil_kelime = st.text_input("Silinecek Kelime:")
+    if st.button("Sil"):
+        if sil_kelime.capitalize() in sozluk:
+            del sozluk[sil_kelime.capitalize()]
+            sozlugu_kaydet(sozluk)
+            st.warning(f"❌ '{sil_kelime.capitalize()}' silindi!")
         else:
-            self.ids.result_label.text = "⚠️ Kelime bulunamadı!"
+            st.error("Kelime bulunamadı.")
 
-class QuizScreen(Screen):
-    def yeni_soru(self):
+# 📝 Quiz Modu
+elif sayfa == "📝 Quiz Modu":
+    st.subheader("🧠 Quiz Modu")
+
+    if "quiz_kelime" not in st.session_state:
+        st.session_state.quiz_kelime = ""
+        st.session_state.quiz_cevap = ""
+        st.session_state.soru_tipi = ""
+        st.session_state.sec_options = []
+
+    def yeni_soru():
         if random.choice([True, False]):
-            self.soru_tipi = "ing-tr"
-            self.quiz_kelime, self.quiz_cevap = random.choice(list(sozluk.items()))
+            st.session_state.soru_tipi = "ing-tr"
+            st.session_state.quiz_kelime, st.session_state.quiz_cevap = random.choice(list(sozluk.items()))
+            secenekler = random.sample(list(sozluk.values()), 3)
         else:
-            self.soru_tipi = "tr-ing"
-            self.quiz_kelime, self.quiz_cevap = random.choice(list(ters_sozluk.items()))
+            st.session_state.soru_tipi = "tr-ing"
+            st.session_state.quiz_kelime, st.session_state.quiz_cevap = random.choice(list(ters_sozluk.items()))
+            secenekler = random.sample(list(ters_sozluk.values()), 3)
 
-        self.ids.quiz_label.text = f"❓ {self.quiz_kelime} ne anlama gelir?"
-        self.ids.quiz_result.text = ""
+        if st.session_state.quiz_cevap not in secenekler:
+            secenekler[random.randint(0, 2)] = st.session_state.quiz_cevap
 
-        secenekler = random.sample(list(sozluk.values() if self.soru_tipi == "ing-tr" else ters_sozluk.values()), 3)
-        if self.quiz_cevap not in secenekler:
-            secenekler[random.randint(0, 2)] = self.quiz_cevap
         random.shuffle(secenekler)
+        st.session_state.sec_options = secenekler
 
-        for i, secenek in enumerate(secenekler):
-            self.ids[f"option_{i+1}"].text = secenek
+    if st.button("🔄 Yeni Soru"):
+        yeni_soru()
 
-    def kontrol_et(self, cevap):
-        if cevap == self.quiz_cevap:
-            self.ids.quiz_result.text = "✅ Doğru!"
-        else:
-            self.ids.quiz_result.text = f"❌ Yanlış! Doğru cevap: {self.quiz_cevap}"
-
-class SozlukApp(App):
-    def build(self):
-        Builder.load_file("mobil_sozluk.kv")
-        sm = ScreenManager()
-
-        sm.add_widget(MainScreen(name='main'))
-        sm.add_widget(DictionaryScreen(name='dictionary'))
-        sm.add_widget(QuizScreen(name='quiz'))
-
-        sm.current = 'main'  # <- açılış ekranı sorunu çözülür
-        return sm
-
-if __name__ == '__main__':
-    SozlukApp().run()
+    if st.session_state.quiz_kelime:
+        st.markdown(f"**❓ {st.session_state.quiz_kelime} ne anlama gelir?**")
+        for secenek in st.session_state.sec_options:
+            if st.button(secenek):
+                if secenek == st.session_state.quiz_cevap:
+                    st.success("✅ Doğru!")
+                else:
+                    st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
+                st.session_state.quiz_kelime = ""
