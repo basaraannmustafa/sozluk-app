@@ -1,15 +1,17 @@
 import streamlit as st
-st.set_page_config(page_title="İngilizce-Türkçe Sözlük", layout="centered")
-
 import random
 import os
+import pandas as pd
+
+# Sayfa ayarı (en üste gelmeli!)
+st.set_page_config(page_title="İngilizce-Türkçe Sözlük", layout="centered")
 
 # Özel font ve emoji desteği
 st.markdown("""
     <style>
     @font-face {
         font-family: 'Inter';
-        src: url('fonts/Inter-Regular.ttf') format('truetype');
+        src: url('Inter-Regular.otf') format('opentype');
     }
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
@@ -46,9 +48,9 @@ ters_sozluk = {v: k for k, v in sozluk.items()}
 # 🏠 Ana Sayfa
 if sayfa == "🏠 Ana Sayfa":
     st.markdown("## 📚 İngilizce-Türkçe Sözlük")
-    st.markdown("Bu uygulama ile kelime arayabilir, yeni kelime ekleyebilir ve quiz modunda kendinizi test edebilirsiniz.")
+    st.markdown("Bu site ile kelime arayabilir, yeni kelime ekleyebilir veya quiz modunda kendinizi test edebilirsiniz.")
 
-# 📖 Sözlük Ekranı
+# 📖 Sözlük Sayfası
 elif sayfa == "📖 Sözlük":
     st.subheader("🔍 Kelime Ara")
     kelime = st.text_input("Kelime giriniz:")
@@ -63,7 +65,7 @@ elif sayfa == "📖 Sözlük":
         if yeni_kelime and yeni_anlam:
             sozluk[yeni_kelime.capitalize()] = yeni_anlam.capitalize()
             sozlugu_kaydet(sozluk)
-            st.success(f"✅ '{yeni_kelime.capitalize()}' eklendi!")
+            st.success(f"✅ '{yeni_kelime.capitalize()}' eklenmiştir.")
 
     st.subheader("➖ Kelime Sil")
     sil_kelime = st.text_input("Silinecek Kelime:")
@@ -71,7 +73,7 @@ elif sayfa == "📖 Sözlük":
         if sil_kelime.capitalize() in sozluk:
             del sozluk[sil_kelime.capitalize()]
             sozlugu_kaydet(sozluk)
-            st.warning(f"❌ '{sil_kelime.capitalize()}' silindi!")
+            st.warning(f"❌ '{sil_kelime.capitalize()}' silinmiştir.")
         else:
             st.error("Kelime bulunamadı.")
 
@@ -110,16 +112,18 @@ elif sayfa == "📝 Quiz Modu":
             if st.button(secenek):
                 if secenek == st.session_state.quiz_cevap:
                     st.success("✅ Doğru!")
-    else:
-        st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
-        st.session_state.quiz_kelime = ""
+                else:
+                    st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
+                    st.session_state.quiz_kelime = ""
 
-    elif secenek == "Sözlük Listesi":
-        st.header("Tüm Sözlük Listesi 📜")
-        sozluk = sozlugu_yukle()
-    
+# 📜 Sözlük Listesi Sayfası
+elif sayfa == "📜 Sözlük Listesi":
+    st.header("📜 Tüm Sözlük Listesi")
+    sozluk = sozlugu_yukle()
+
     if sozluk:
         df = pd.DataFrame(sozluk.items(), columns=["Kelime", "Anlam"])
         st.dataframe(df, use_container_width=True)
     else:
-        st.info("Henüz sözlükte kayıtlı kelime yok.")               
+        st.info("Henüz sözlükte kayıtlı kelime yok.")
+
