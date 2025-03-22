@@ -119,7 +119,7 @@ elif sayfa == "📝 Quiz Modu":
 # 📜 Sözlük Listesi Sayfası
 elif sayfa == "📜 Sözlük Listesi":
     st.header("📜 Tüm Sözlük Listesi")
-    sozluk = sozlugu_yukle()
+    sozluk = dict(sorted(sozlugu_yukle().items()))
 
     if sozluk:
         df = pd.DataFrame(sozluk.items(), columns=["Kelime", "Anlam"])
