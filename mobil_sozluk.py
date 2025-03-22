@@ -36,9 +36,6 @@ def sozlugu_kaydet(sozluk):
         for kelime, anlam in sozluk.items():
             f.write(f"{kelime}:{anlam}\n")
 
-# Sayfa başlığı
-st.set_page_config(page_title="İngilizce-Türkçe Sözlük", layout="centered")
-
 # Sayfa seçici
 sayfa = st.sidebar.selectbox("📂 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "📝 Quiz Modu"])
 
