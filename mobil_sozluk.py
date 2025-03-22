@@ -114,8 +114,8 @@ elif sayfa == "📝 Quiz Modu":
         st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
         st.session_state.quiz_kelime = ""
 
-    elif secenek == "📜 Sözlük Listesi":
-        st.header("📜 Tüm Sözlük Listesi")
+    elif secenek == "Sözlük Listesi":
+        st.header("Tüm Sözlük Listesi 📜")
         sozluk = sozlugu_yukle()
     
     if sozluk:
