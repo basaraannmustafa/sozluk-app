@@ -123,6 +123,7 @@ elif sayfa == "📜 Sözlük Listesi":
 
     if sozluk:
         df = pd.DataFrame(sozluk.items(), columns=["Kelime", "Anlam"])
+        df.index += 1
         st.dataframe(df, use_container_width=True)
     else:
         st.info("Henüz sözlükte kayıtlı kelime yok.")
