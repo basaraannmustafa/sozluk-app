@@ -7,3 +7,4 @@ Contact:İletişim
 Engineer:Mühendis
 Bilingual:İki dilli
 Stream:Akış
+Alien:Uzaylı
